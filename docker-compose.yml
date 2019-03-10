@@ -21,3 +21,20 @@ services:
       - nsqlookupd  
     ports:
       - 4171:4171
+  event_storage:
+    image: couchbase
+    ports: 
+      - 8091-8094:8091-8094
+      - 11210:11210
+  elasticsearch:
+    image: elasticsearch:6.6.1
+    networks: 
+      - searching
+    ports:
+      - 9200:9200
+      - 9300:9300
+    environment: 
+      - discovery.type=single-node
+
+networks: 
+  searching:
