@@ -20,4 +20,4 @@ services:
     depends_on:
       - nsqlookupd  
     ports:
-      - "4171"
+      - 4171:4171
