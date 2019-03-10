@@ -1,30 +1,32 @@
 package main
 
 import (
-	"fmt"
 	"log"
+	"sync"
 
-	_ "github.com/lib/pq"
-	"github.com/vrgbrg/flowfluence/database"
+	"github.com/bitly/go-nsq"
+	writerconsumer "github.com/vrgbrg/flowfluence/writer-consumer"
 )
 
 const (
-	host     = "127.0.0.1"
-	port     = 5432
-	user     = "flowfluence"
-	password = "flowfluence"
-	dbname   = "flowfluence"
+	ConsumerTopic = "write_consumer"
+	Host          = "127.0.0.1"
+	Port          = "4150"
 )
 
 func main() {
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
 
-	connection := fmt.Sprintf("host=%s port=%d user=%s "+
-		"password=%s dbname=%s sslmode=disable",
-		host, port, user, password, dbname)
+	config := nsq.NewConfig()
+	q, _ := nsq.NewConsumer(ConsumerTopic, "ch", config)
 
-	_, err := database.Connect(connection)
+	wc := writerconsumer.New(q)
+	wc.Init(wg)
 
+	err := q.ConnectToNSQD(Host + ":" + Port)
 	if err != nil {
-		log.Fatal(err)
+		log.Panic("Could not connect")
 	}
+	wg.Wait()
 }

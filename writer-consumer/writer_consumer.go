@@ -7,14 +7,23 @@ import (
 	"github.com/bitly/go-nsq"
 )
 
-func init() {
-	wg := &sync.WaitGroup{}
-	wg.Add(1)
+// WriterConsumer struct
+type WriterConsumer struct {
+	q *nsq.Consumer
+}
 
-	config := nsq.NewConfig()
-	q, _ := nsq.NewConsumer("write_consumer", "ch", config)
-	q.AddHandler(nsq.HandlerFunc(func(message *nsq.Message) error {
-		log.Printf("Got a message: %v", message)
+// New writer consumer creating
+func New(q *nsq.Consumer) *WriterConsumer {
+	return &WriterConsumer{
+		q: q,
+	}
+}
+
+// Init consumer write event
+func (wc *WriterConsumer) Init(wg *sync.WaitGroup) {
+	wc.q.AddHandler(nsq.HandlerFunc(func(message *nsq.Message) error {
+		log.Printf("Got a message: %s", message.Body)
+		log.Printf("Full response is: %v", message)
 
 		addEvent(message)
 		updateElastic(message)
@@ -22,11 +31,6 @@ func init() {
 		wg.Done()
 		return nil
 	}))
-	err := q.ConnectToNSQD("127.0.0.1:4150")
-	if err != nil {
-		log.Panic("Could not connect")
-	}
-	wg.Wait()
 }
 
 func addEvent(message *nsq.Message) {
