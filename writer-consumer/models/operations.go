@@ -66,13 +66,6 @@ func (handler *PostHandler) Create(ctx context.Context, post Post) (Post, error)
 		post.ID = xid.New().String()
 	}
 
-	// bulk := handler.client.Bulk().Index("Posts").Type("Post")
-
-	// bulk.Add(elastic.NewBulkIndexRequest().Id(post.ID).Doc(post))
-	// if _, err := bulk.Do(ctx); err != nil {
-	// 	return Post{}, err
-	// }
-
 	if _, err := handler.client.Index().Index(postIndexName).Type("post").BodyJson(post).Do(ctx); err != nil {
 		return Post{}, err
 	}
