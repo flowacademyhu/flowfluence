@@ -2,7 +2,6 @@ package models
 
 import (
 	"context"
-	"log"
 	"testing"
 	"time"
 
@@ -67,5 +66,15 @@ func TestPostHandler(t *testing.T) {
 		return
 	}
 
-	log.Println("Post is: ", savedPost)
+	savedPost.Title = "Edited post"
+
+	if _, err := postHandler.Update(ctx, savedPost); err != nil {
+		t.Error("Error when post updating ", err)
+		return
+	}
+
+	if _, err := postHandler.Get(ctx, savedPost.ID); err != nil {
+		t.Error("Error when post get ", err)
+		return
+	}
 }
